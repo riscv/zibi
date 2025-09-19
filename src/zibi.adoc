@@ -1,5 +1,5 @@
 [[zibi]]
-== "Zibi" Extension for Branch with Immediate, Version 0.1
+== "Zibi" Extension for Branch with Immediate, Version 0.6
 
 This chapter defines the "Zibi" extension, which appends conditional branch instructions with an immediate operand. 
 In real world applications, conditional branches comparing with constants are of great universality. 
