@@ -1,0 +1,1 @@
+../../../src/priv/smrnmi.adoc

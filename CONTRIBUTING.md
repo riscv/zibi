@@ -1,0 +1,195 @@
+# Contributing to the RISC-V ISA Manual
+
+Thanks for your interest in contributing! This guide covers how to set up your environment, build locally, and submit changes.
+
+## Install dependencies
+
+### 1 - Clone with submodules
+This repository uses the `docs-resources` submodule.
+
+```bash
+git clone --recurse-submodules https://github.com/riscv/riscv-isa-manual.git
+```
+
+If you already cloned the repo, initialize the submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+### 2 - Recommended: use the docs container image
+Building with the container is the most consistent approach.
+
+- Install Docker (or Podman).
+- Pull the base image:
+
+```bash
+docker pull riscvintl/riscv-docs-base-container-image:latest
+```
+
+### 3 - Alternative: local toolchain
+Local builds are available, but require the full documentation toolchain (Ruby, Asciidoctor, and related extensions). Follow the dependency list in the RISC-V Documentation Developer Guide:
+
+https://github.com/riscv/docs-dev-guide
+
+## Build locally
+
+From the repo root:
+
+```bash
+make -j2 build
+```
+
+NOTE:  If you have a powerful machine with lots of RAM you can use -j4 or higher parallelism settings, however, -j2 is optimal for most machines.
+
+Common targets:
+
+```bash
+make build-pdf
+make build-html
+make build-epub
+```
+
+NOTE:  For local development, it's recommended to target build-html throughout your development process.  The HTML output is the priority format and generating the PDF consumes considerable resources increasing build time to over 8 minutes typically.
+
+When iterating on spec changes locally, you can significantly speed up incremental rebuilds by using:
+
+```bash
+make build-html UNRELIABLE_BUT_FASTER_INCREMENTAL_BUILDS=1
+```
+
+This skips the clean-workdir step between builds, so unchanged files are not reprocessed.  As the name implies, this is not guaranteed to catch all changes in every scenario — use a clean build (`make build-html`) before opening a PR.
+
+Outputs land in the `build/` directory.
+
+## Contributing changes
+
+- Create a branch for your change.
+- Keep commits focused and include clear messages.
+- Run the relevant build target(s) before opening a PR.
+- Sign off your commit with `git commit -s` or add `git config --global format.signOff true` to your global git config.
+- Open a pull request with a short summary of what changed and why.
+
+## PR checklist (as applicable)
+
+- Run the relevant build target(s), such as `make build`, `make build-pdf`, or `make build-html`.
+- Add or update references/citations in `src/resources/riscv-spec.bib` when needed.
+- Under development by the Documentation SIG: Normative Rules and Antora integration.
+
+## Repository structure
+
+- `src/` is the canonical AsciiDoc content used by `make` builds. `src/riscv-spec.adoc` is the entry point that includes volume files (e.g. `unpriv.adoc` and `priv.adoc`).
+- `modules/` contains the Antora site sources. `modules/unpriv/pages` and `modules/priv/pages` mirror chapter files for the site, and `modules/*/nav.adoc` controls navigation.
+- `docs-resources/` is a submodule with shared themes, converters, schemas, and tooling.
+- `normative_rule_defs/` contains one YAML definition file per chapter for normative rules.
+- `build/` is generated output.
+
+## Adding a new extension (AsciiDoc)
+
+NOTE: New RISC-V specifications may only be developed by RISC-V International members through the formal ratification process and in accordance with the applicable Technical Steering Committee policies. Specifications cannot be introduced arbitrarily or by submitting an unsolicited pull request.
+
+1. Create `src/<extension>.adoc` with the new chapter content.
+2. Add an `include::` line in the appropriate volume (e.g. `src/unpriv.adoc` or `src/priv.adoc`) in the correct order.
+
+## Sign your commits
+
+All contributions must be signed with a `Signed-off-by: Name <email>` and a cryptographic key using either SSH (recommended) or GPG.
+
+# Signing GitHub Commits — Step by Step
+
+## REQUIRED: Sign off your commits with a `Signed-off-by: Name <email>` in the commit message.
+
+This can be achieved with `git commit -s` or automating it by adding `git config --global format.signOff true` to your global git config file.
+
+Note that the Developer's Certificate of Origin bot that RISC-V employs across all of it's repositories requires the `Signed-off-by:` trailer exists.  If it's missing, Pull Requests will fail the DCO Check and will not be accepted.
+
+# Signing Git Commits with your Signing Key
+
+In addition to adding the DCO Signed-off-by line to your commits, your commits must be signed with your private key, and your public key must be uploaded to GitHub as a signing key.
+
+## Option A: Sign commits with SSH (recommended)
+
+### 1. Generate an SSH key (skip if you already have one)
+```bash
+ssh-keygen -t ed25519 -C "your_email@example.com"
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
+### 2. Add the public key to GitHub
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+GitHub → Settings → **SSH and GPG keys** → **New SSH key**
+Key type: **Signing key**
+
+### 3. Configure Git to use SSH signing
+```bash
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519.pub
+git config --global commit.gpgsign true
+```
+
+### 4. Create a signed commit
+```bash
+git commit -m "message"
+```
+
+### 5. Verify locally
+```bash
+git log --show-signature -1
+```
+
+---
+
+## Option B: Sign commits with GPG
+
+For a comprehensive guide, see [GitHub's documentation on telling Git about your signing key](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key).
+
+### 1. Install GPG
+- macOS:
+```bash
+brew install gnupg
+```
+- Ubuntu/Debian:
+```bash
+sudo apt-get install gnupg
+```
+- Windows: Install **Gpg4win**
+
+### 2. Generate a GPG key
+```bash
+gpg --full-generate-key
+```
+Select RSA and RSA, 4096 bits, and enter your name and email (must match your GitHub account email).
+
+### 3. List keys and copy the key ID
+```bash
+gpg --list-secret-keys --keyid-format=long
+```
+The key ID is the hex string after `sec rsa4096/` on the `sec` line. For example, if the output shows `sec rsa4096/3AA5C34371567BD2`, then `3AA5C34371567BD2` is your key ID.
+
+### 4. Configure Git to sign commits
+```bash
+git config --global user.signingkey YOUR_KEY_ID
+git config --global commit.gpgsign true
+```
+Replace `3AA5C34371567BD2` with your actual key ID from step 3.
+
+### 5. Export the public key and add it to GitHub
+```bash
+gpg --armor --export YOUR_KEY_ID
+```
+Copy the entire output (including `-----BEGIN PGP PUBLIC KEY BLOCK-----` and `-----END PGP PUBLIC KEY BLOCK-----`).
+
+GitHub → Settings → **SSH and GPG keys** → **New GPG key** → paste the public key.
+
+### 6. Create a signed commit
+```bash
+git commit -m "message"
+```
+
+### 7. Verify locally
+```bash
+git log --show-signature -1
+```
