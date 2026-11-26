@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../docs-resources/schemas/defs-schema.json
+
+$schema: "../docs-resources/schemas/defs-schema.json#"
+
+# Used to create normative rules for zibi.adoc file.
+# Tags refer to anchors in any adoc file for any ISA manual.
+
+chapter_name: Zibi (Branch immediate)
+
+normative_rule_definitions:
+  - name: beqi_bnei_enc
+    description: |
+      Encoding for BEQI and BNEI.
+    tags: ["norm:beqi_bnei_enc"]
+  - name: beqi_bnei_btype_offset
+    tags: ["norm:beqi_bnei_btype_offset"]
+  - name: Zibi_cimm_decode
+    tags: ["norm:Zibi_cimm_decode"]
+  - name: beqi_bnei_misaligned_exception
+    tags: ["norm:beqi_bnei_misaligned_exception"]
+  - name: beqi_op
+    tag: "norm:beqi_op"
+    kind: instruction
+    instance: beqi
+  - name: bnei_op
+    tag: "norm:bnei_op"
+    kind: instruction
+    instance: bnei
